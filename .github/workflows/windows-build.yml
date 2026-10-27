@@ -1,0 +1,63 @@
+name: GitLab Windows builds
+run-name: gitlab-${{ inputs.request_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact rygt-team/RyGT GitLab commit
+        required: true
+        type: string
+      request_id:
+        description: Unique GitLab pipeline/job dispatch identifier
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 180
+    env:
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      REQUEST_ID: ${{ inputs.request_id }}
+    steps:
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Check out exact GitLab source
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:SOURCE_SHA -cnotmatch '^[0-9a-f]{40}$') { throw 'Invalid source SHA' }
+          if ($env:REQUEST_ID -cnotmatch '^[0-9]+-[0-9]+-[0-9a-f]{32}$') { throw 'Invalid request ID' }
+          New-Item -ItemType Directory -Force C:/rygt-ci | Out-Null
+          Set-Location C:/rygt-ci
+          git init
+          if ($LASTEXITCODE) { throw 'git init failed' }
+          git config core.longpaths true
+          git remote add origin https://gitlab.com/rygt-team/RyGT.git
+          git fetch --depth=1 origin $env:SOURCE_SHA
+          if ($LASTEXITCODE) { throw 'GitLab source fetch failed' }
+          git checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE) { throw 'GitLab source checkout failed' }
+          if ((git rev-parse HEAD) -cne $env:SOURCE_SHA) { throw 'Source SHA mismatch' }
+      - name: Build launcher and renderer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Set-Location C:/rygt-ci
+          . ./ci/setup-hosted-windows.ps1
+          & ./ci/build-windows.ps1 -Target Launcher
+          & ./ci/build-windows.ps1 -Target Renderer
+          [ordered]@{
+            gitlab_commit = $env:SOURCE_SHA
+            request_id = $env:REQUEST_ID
+            github_run_id = $env:GITHUB_RUN_ID
+            workflow_commit = $env:GITHUB_SHA
+          } | ConvertTo-Json | Set-Content -Encoding utf8 artifacts/GITHUB-BUILD.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-${{ inputs.request_id }}
+          path: C:/rygt-ci/artifacts/
+          if-no-files-found: error
+          retention-days: 7
