@@ -1,3 +1,3 @@
 # RyGT CI workers
 
-GitLab rygt-team/RyGT is the authoritative source. GitHub Actions builds, tests and packages development, then uploads CI ZIPs and checksums to the GitLab rygt-ci Generic Package Registry. No releases or changelogs are created. See the source repository docs/dev/CI.md.
+GitLab rygt-team/RyGT is the authoritative source. GitHub Actions builds, tests and packages development into separate Release (`ci`) and optimized Debug/Diagnostics (`debug-ci`) ZIPs, then uploads them and their checksums to the matching GitLab Generic Package Registry channels. Debug includes verified symbols and tracing tools. No tagged releases or changelogs are created. See the source repository docs/dev/CI.md.

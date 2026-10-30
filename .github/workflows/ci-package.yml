@@ -56,9 +56,13 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           Set-Location C:/rygt-ci
+          python -m unittest discover -s ci/tests -p 'test_*.py'
+          if ($LASTEXITCODE) { throw 'CI regression tests failed' }
           . ./ci/setup-hosted-windows.ps1
           & ./ci/build-windows.ps1 -Target Launcher
-          & ./ci/build-windows.ps1 -Target Renderer
+          & ./ci/build-windows.ps1 -Target Renderer -Flavor Release
+          & ./ci/build-windows.ps1 -Target Launcher -Flavor Diagnostics
+          & ./ci/build-windows.ps1 -Target Renderer -Flavor Diagnostics
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: windows-${{ needs.source.outputs.commit }}
@@ -85,7 +89,7 @@ jobs:
       - name: Build and test converter
         working-directory: source
         run: |
-          python3 -m unittest discover -s ci/tests -p test_registry_ci.py
+          python3 -m unittest discover -s ci/tests -p 'test_*.py'
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build
           cmake --preset linux-release-cli
@@ -118,7 +122,7 @@ jobs:
         with:
           name: windows-${{ needs.source.outputs.commit }}
           path: source/artifacts/
-      - name: Assemble and validate full CI package
+      - name: Assemble and validate separate Release and Debug packages
         working-directory: source
         env:
           CI_COMMIT_SHA: ${{ needs.source.outputs.commit }}
@@ -126,13 +130,27 @@ jobs:
         run: python3 ci/package.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: RyGT-CI-${{ needs.source.outputs.commit }}
+          name: ci-${{ needs.source.outputs.commit }}
           path: |
-            source/dist/*.zip
-            source/dist/*.zip.sha256
+            source/dist/RyGT-ci-*.zip
+            source/dist/RyGT-ci-*.zip.sha256
           if-no-files-found: error
           retention-days: 7
-      - name: Publish CI package to GitLab
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: debug-ci-${{ needs.source.outputs.commit }}
+          path: |
+            source/dist/RyGT-debug-ci-*.zip
+            source/dist/RyGT-debug-ci-*.zip.sha256
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: package-manifest-${{ needs.source.outputs.commit }}
+          path: source/dist/CI-PACKAGES.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Publish ci and debug-ci packages to GitLab
         env:
           GITLAB_PACKAGE_TOKEN: ${{ secrets.GITLAB_PACKAGE_TOKEN }}
         run: python3 ci/registry_ci.py publish
