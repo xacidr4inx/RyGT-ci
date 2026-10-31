@@ -27,7 +27,7 @@ jobs:
           FORCE_BUILD: ${{ inputs.force }}
         run: python3 ci/registry_ci.py resolve
   windows:
-    needs: source
+    needs: [source, tests]
     if: needs.source.outputs.needed == 'true'
     runs-on: windows-2022
     timeout-minutes: 180
