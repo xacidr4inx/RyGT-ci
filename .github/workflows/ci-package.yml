@@ -69,6 +69,13 @@ jobs:
           path: C:/rygt-ci/artifacts/
           if-no-files-found: error
           retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: capture-layout-debug-${{ needs.source.outputs.commit }}
+          path: C:/rygt-ci/artifacts/renderer-diagnostics/capture-layout-debug.json
+          if-no-files-found: ignore
+          retention-days: 7
   tests:
     needs: source
     if: needs.source.outputs.needed == 'true'
