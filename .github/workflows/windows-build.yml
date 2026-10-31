@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       source_sha:
-        description: Exact rygt-team/RyGT GitLab commit
+        description: Exact rygt-team/RyGTS GitLab commit
         required: true
         type: string
       request_id:
@@ -35,7 +35,7 @@ jobs:
           git init
           if ($LASTEXITCODE) { throw 'git init failed' }
           git config core.longpaths true
-          git remote add origin https://gitlab.com/rygt-team/RyGT.git
+          git remote add origin https://gitlab.com/rygt-team/RyGTS.git
           git fetch --depth=1 origin $env:SOURCE_SHA
           if ($LASTEXITCODE) { throw 'GitLab source fetch failed' }
           git checkout --detach FETCH_HEAD

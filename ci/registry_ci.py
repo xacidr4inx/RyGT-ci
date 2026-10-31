@@ -7,7 +7,7 @@ import re
 import urllib.error
 import urllib.request
 
-API = 'https://gitlab.com/api/v4/projects/rygt-team%2FRyGT'
+API = 'https://gitlab.com/api/v4/projects/rygt-team%2FRyGTS'
 CHANNELS = ('ci', 'debug-ci')
 
 
@@ -53,7 +53,7 @@ def publish():
     # Validate every package before making any network writes.
     for variant in variants:
         channel = variant['channel']
-        archive = folder / f'RyGT-{channel}-{commit[:8]}.zip'
+        archive = folder / f'RyGTS-{channel}-{commit[:8]}.zip'
         checksum = archive.with_suffix('.zip.sha256')
         digest, name = checksum.read_text().strip().split('  ', 1)
         with archive.open('rb') as stream:

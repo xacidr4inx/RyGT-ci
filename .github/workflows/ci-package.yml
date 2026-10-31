@@ -1,5 +1,5 @@
-name: RyGT CI package
-run-name: RyGT development CI build
+name: RyGTS CI package
+run-name: RyGTS development CI build
 on:
   workflow_dispatch:
     inputs:
@@ -46,7 +46,7 @@ jobs:
           Set-Location C:/rygt-ci
           git init
           git config core.longpaths true
-          git remote add origin https://gitlab.com/rygt-team/RyGT.git
+          git remote add origin https://gitlab.com/rygt-team/RyGTS.git
           git fetch --depth=1 origin $env:SOURCE_SHA
           if ($LASTEXITCODE) { throw 'GitLab fetch failed' }
           git checkout --detach FETCH_HEAD
@@ -82,7 +82,7 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           git init source
           cd source
-          git remote add origin https://gitlab.com/rygt-team/RyGT.git
+          git remote add origin https://gitlab.com/rygt-team/RyGTS.git
           git fetch --depth=1 origin "$SOURCE_SHA"
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
@@ -114,7 +114,7 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           git init source
           cd source
-          git remote add origin https://gitlab.com/rygt-team/RyGT.git
+          git remote add origin https://gitlab.com/rygt-team/RyGTS.git
           git fetch --depth=1 origin "$SOURCE_SHA"
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
@@ -132,16 +132,16 @@ jobs:
         with:
           name: ci-${{ needs.source.outputs.commit }}
           path: |
-            source/dist/RyGT-ci-*.zip
-            source/dist/RyGT-ci-*.zip.sha256
+            source/dist/RyGTS-ci-*.zip
+            source/dist/RyGTS-ci-*.zip.sha256
           if-no-files-found: error
           retention-days: 7
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: debug-ci-${{ needs.source.outputs.commit }}
           path: |
-            source/dist/RyGT-debug-ci-*.zip
-            source/dist/RyGT-debug-ci-*.zip.sha256
+            source/dist/RyGTS-debug-ci-*.zip
+            source/dist/RyGTS-debug-ci-*.zip.sha256
           if-no-files-found: error
           retention-days: 7
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
